@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Text, SafeAreaView, View, FlatList, TouchableOpacity, AsyncStorage, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
 import { formatDistance } from 'date-fns';
 import br from 'date-fns/locale/pt-BR';
 import api from '../services/api';
@@ -21,14 +23,26 @@ export default function Box() {
     getBox();
   }, []);
 
+  const openFile = async file => {
+    try {
+      const path = `${FileSystem.documentDirectory}${file.title}`;
+      await FileSystem.createDownloadResumable(file.url);
+      await MediaLibrary.saveToLibraryAsync(path);
+      Alert.alert('Deu certo, arquivo pronto na galesria!');
+    } catch (err) {
+      Alert.alert(`Deu erro: ${err.type}`);
+    }
+  };
+
   function renderItem({ item }) {
     return (
       <>
-        <TouchableOpacity onPress={() => {}} style={styles.file} />
-        <View style={styles.fileInfo}>
-          <MaterialIcons name='insert-drive-file' size={24} color='#A5CFFF' />
-          <Text style={styles.fileTitle}>{item.title}</Text>
-        </View>
+        <TouchableOpacity onPress={() => openFile(item)} style={styles.file}>
+          <View style={styles.fileInfo}>
+            <MaterialIcons name='insert-drive-file' size={24} color='#A5CFFF' />
+            <Text style={styles.fileTitle}>{item.title}</Text>
+          </View>
+        </TouchableOpacity>
 
         <Text style={styles.fileDate}>
           <Text style={styles.fileDate}>
@@ -42,13 +56,37 @@ export default function Box() {
   async function handleUpload() {
     const status = await ImagePicker.requestCameraPermissionsAsync();
     if (!status.granted) {
-      Alert.alert('Sem permissão, sem caixa. Direitos iguais!');
+      Alert.alert('Sem permissão, sem RocketBox. Direitos iguais!');
     }
 
-    await ImagePicker.launchImageLibraryAsync({
+    const file = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsMultipleSelection: false
     });
+
+    if (file.cancelled) {
+      Alert.alert('Você cancelou, nada enviado.');
+    } else {
+      const uriParts = file.uri.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+      const ext = fileType.toLowerCase() === 'heic' ? 'jpg' : fileType;
+
+      // eslint-disable-next-line no-undef
+      const data = new FormData();
+      data.append('file', {
+        uri: file.uri,
+        name: `IMG_${new Date().getTime().toString()}.${ext}`,
+        type: `image/${ext}`
+      });
+
+      const options = {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data'
+        }
+      };
+      await api.post(`boxes/${box._id}/files`, data, options);
+    }
   }
 
   return (
