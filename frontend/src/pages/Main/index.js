@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import api from "../../services/api";
+import api from '../../services/api';
 
-import './styles.css';
 import logo from '../../assets/logo.png';
+
+import { Container, SubmitButton } from './styles';
 
 export default function Main(props) {
   const [newBox, setNewBox] = useState('');
@@ -11,7 +12,7 @@ export default function Main(props) {
     e.preventDefault();
 
     const response = await api.post('boxes', {
-      title: newBox,
+      title: newBox
     });
 
     const { _id } = response.data;
@@ -19,12 +20,17 @@ export default function Main(props) {
   }
 
   return (
-    <div id="main-container">
+    <Container>
       <form onSubmit={handleSubmit}>
-        <img src={logo} alt="lostbox"/>
-        <input type="text" placeholder="Criar um box" value={newBox} onChange={e => setNewBox(e.target.value)}/>
-        <button type="submit">Criar</button>
+        <img src={logo} alt='lostbox' />
+        <input
+          type='text'
+          placeholder='Criar um box'
+          value={newBox}
+          onChange={(e) => setNewBox(e.target.value)}
+        />
+        <SubmitButton type='submit'>Criar</SubmitButton>
       </form>
-    </div>
-  )
-};
+    </Container>
+  );
+}

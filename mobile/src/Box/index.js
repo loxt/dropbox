@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import { formatDistance } from 'date-fns';
+import socket from 'socket.io-client';
 import br from 'date-fns/locale/pt-BR';
 import api from '../services/api';
 
@@ -15,13 +16,24 @@ export default function Box() {
   useEffect(() => {
     async function getBox() {
       const boxStoraged = await AsyncStorage.getItem('@RocketBox:box');
+      subscribeToNewFiles(boxStoraged);
       const response = await api.get(`boxes/${boxStoraged}`);
 
       setBox(response.data);
     }
 
     getBox();
-  }, []);
+  }, [box]);
+
+  const subscribeToNewFiles = boxFile => {
+    const io = socket('https://backend-omnistack-week6.herokuapp.com');
+
+    io.emit('connectRoom', boxFile);
+
+    io.emit('file', data => {
+      setBox({ ...box, files: [data, ...box.files] });
+    });
+  };
 
   const openFile = async file => {
     try {
@@ -30,7 +42,7 @@ export default function Box() {
       await MediaLibrary.saveToLibraryAsync(path);
       Alert.alert('Deu certo, arquivo pronto na galeria!');
     } catch (err) {
-      Alert.alert(`Deu erro: ${err.type}`);
+      Alert.alert(`Deu erro: ${err}`);
     }
   };
 
