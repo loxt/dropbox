@@ -37,7 +37,7 @@ export default function Box() {
 
   const openFile = async file => {
     try {
-      const path = `${FileSystem.documentDirectory}${file.title}`;
+      const path = `${FileSystem.cacheDirectory}${file.title}`;
       await FileSystem.downloadAsync(file.url, path);
       await MediaLibrary.saveToLibraryAsync(path);
       Alert.alert('Deu certo, arquivo pronto na galeria!');
