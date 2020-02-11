@@ -26,9 +26,9 @@ export default function Box() {
   const openFile = async file => {
     try {
       const path = `${FileSystem.documentDirectory}${file.title}`;
-      await FileSystem.createDownloadResumable(file.url);
+      await FileSystem.downloadAsync(file.url, path);
       await MediaLibrary.saveToLibraryAsync(path);
-      Alert.alert('Deu certo, arquivo pronto na galesria!');
+      Alert.alert('Deu certo, arquivo pronto na galeria!');
     } catch (err) {
       Alert.alert(`Deu erro: ${err.type}`);
     }
