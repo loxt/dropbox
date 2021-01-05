@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^10.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "date-fns": "^2.9.0",
     "expo": "~36.0.0",
     "expo-file-system": "~8.0.0",
